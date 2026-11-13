@@ -1,5 +1,5 @@
 {
-  "search": "path:wiki",
+  "search": "path:wiki OR path:projects",
   "showAttachments": false,
   "showArrow": true,
   "showOrphans": false
