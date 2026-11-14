@@ -60,11 +60,25 @@ Theo form hiện có của hệ thống B2B (ảnh chụp màn hình do chủ va
   - **Desktop (≥ 1024px):** bố cục mới do Claude tự thiết kế dựa trên font Montserrat + tông đen/trắng/xám của design: cột bước bên trái, áo lớn ở giữa, bảng tùy chọn bên phải có "Step x of 12", nút ← →, "Next: …", tổng tiền và Check out. Chủ vault đã duyệt, thích design này.
   - **Chế độ 3D:** nút "3D" cạnh Front/Back. Áo dựng bằng three.js (React Three Fiber), ghép từ bộ phận theo option (fit, vạt, tay, măng sét, 6 kiểu cổ, nẹp, cúc, túi, ly sau, chữ thêu); vải là texture từ họa tiết mẫu. Xoay / dời / zoom được. Code: `src/components/Shirt3D.tsx`, tải riêng (~920 KB) chỉ khi bấm 3D.
   - Hạn chế: áo 3D là hình khối cơ bản, trông "cứng", chưa có nếp vải.
+- **2026-11-14 (buổi 3):** Nâng cấp áo 3D ngay trong code (`src/components/Shirt3D.tsx`), vẫn là áo dựng bằng code:
+  - Tay áo buông theo đường cong, khuỷu hơi gập; thân và tay có nếp vải; lá cổ bẻ nằm trên vai/ngực; cúc có lỗ và chỉ.
+  - Vải có sợi dệt (normal map) và độ bóng nhẹ; đèn studio tự dựng, có bóng đổ.
+  - Vải Floral Blue vẽ lại thành họa tiết paisley, màu nền đổi sang `#5273b3`.
+  - Chế độ 3D chừa chỗ cho nút Front / Back / 3D, camera tự lùi khi khung hẹp.
+  - Thử dựng áo thật trong Blender (qua Blender MCP) nhưng **chưa làm được**: Blender chưa bật addon MCP nên không kết nối.
+- **2026-11-14 (buổi 4):** Làm lại áo 3D để đạt mức ảnh mẫu (chủ vault chê bản dựng bằng code chưa đạt):
+  - **Thân và tay áo là lưới mô phỏng vải thật trong Blender** (`public/models/shirt-sim.glb`, ~3,7 MB). Dựng lại bằng script `tools/blender/shirt_sim.py` rồi `shirt_export.py` (chạy trong Blender, ~2 phút). Bản sao file Blender: `tools/blender/shirt-sim.blend` (không đưa lên git).
+  - Cổ, nẹp, cúc, túi, măng sét, chữ thêu vẫn dựng bằng code và bám theo bề mặt lưới (`src/components/Shirt3D.tsx`, số đo vòng cổ / cổ tay ở `src/data/shirt-sim.json`).
+  - Vải Floral Blue dùng **ảnh vải cắt từ ảnh áo mẫu** (`public/images/fabrics/floral-blue.webp`), ghép thành ô lặp liền mạch. Ảnh gốc nhỏ nên họa tiết còn hơi mềm; cần ảnh scan vải thật để nét hơn. Các vải khác vẫn là họa tiết vẽ.
+  - Thêm chế độ xem riêng áo 3D toàn màn hình để kiểm tra: `/?view3d={"collar":"cutaway"}`.
+  - Một subagent chấm điểm độc lập so với ảnh mẫu qua 5 vòng: từ 2–5/10 lên **7/10 hầu hết hạng mục, kết luận ĐẠT sát nút**; cổ áo 6/10 là phần yếu nhất (mỏng, chưa thấy rõ chân cổ).
+  - Giới hạn: fit Slim / Loose chỉ co giãn ngang cùng một lưới; vạt thẳng là cắt ngang lưới vạt bầu; cổ áo luôn cài kín (ảnh mẫu mở cổ).
+  - Code nằm ở nhánh `shirt-3d-cloth` trên GitHub, chưa gộp vào `main`.
 - Chạy local: `npm install` rồi `npm run dev` (Node 20.13 chạy được).
 
 ## Việc tiếp theo
 - [ ] Xin tài liệu backend API B2B từ chú (endpoint, xác thực, định dạng đơn hàng, các loại measurement type khác).
-- [ ] Tìm người làm 3D dựng áo bằng CLO3D / Marvelous Designer, xuất **.glb** chia phần theo option (`collar_classic`, `sleeve_long`, `cuff_french`, `pocket_left`…, có UV) để thay áo 3D hình khối.
+- [ ] Áo 3D: thân/tay đã có lưới mô phỏng vải (buổi 4). Còn lại: dựng cổ áo dày và đẹp hơn (có thể nhờ người làm CLO3D), lưới riêng cho từng fit, xem xét gộp nhánh `shirt-3d-cloth` vào `main`.
 - [ ] Ảnh thật: thẻ Product (Shirt / Polo / Overshirt), ảnh scan vải, ảnh áo cho từng vải (thêm vào `PREVIEW_PHOTOS` trong `src/data/catalog.ts`).
 - [ ] Danh sách tùy chọn thật và giá thật.
 - [ ] Chốt có chuyển sang Next.js không (khi làm trang công khai cho nhà may cần SEO / tên miền riêng).
@@ -89,5 +103,5 @@ Theo form hiện có của hệ thống B2B (ảnh chụp màn hình do chủ va
 - Deadline: chưa có.
 
 ## Tài nguyên
-- Code: GitHub `NhatProDev/shirtvn-b2c-web` (private); local trên máy Windows: `C:\KhanhNhat\shirtvn b2c web`. Trang thiết kế áo: `src/App.tsx`, `src/components/`, dữ liệu mẫu ở `src/data/`.
+- Code: GitHub `NhatProDev/shirtvn-b2c-web` (private); local trên máy Windows: `D:ile cua choe 2. Projects\shirtvn-b2c-web`. Trang thiết kế áo: `src/App.tsx`, `src/components/`, dữ liệu mẫu ở `src/data/`.
 - Tài liệu API: chưa có.
