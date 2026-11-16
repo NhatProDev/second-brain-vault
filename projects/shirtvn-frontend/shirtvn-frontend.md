@@ -3,7 +3,7 @@ type: project
 title: ShirtVN Frontend Dev
 status: in-progress
 created: 2026-11-13
-updated: 2026-11-14
+updated: 2026-11-16
 tags:
   - project
   - frontend
@@ -74,9 +74,17 @@ Theo form hiện có của hệ thống B2B (ảnh chụp màn hình do chủ va
   - Một subagent chấm điểm độc lập so với ảnh mẫu qua 5 vòng: từ 2–5/10 lên **7/10 hầu hết hạng mục, kết luận ĐẠT sát nút**; cổ áo 6/10 là phần yếu nhất (mỏng, chưa thấy rõ chân cổ).
   - Giới hạn: fit Slim / Loose chỉ co giãn ngang cùng một lưới; vạt thẳng là cắt ngang lưới vạt bầu; cổ áo luôn cài kín (ảnh mẫu mở cổ).
   - Code nằm ở nhánh `shirt-3d-cloth` trên GitHub, chưa gộp vào `main`.
-- Chạy local: `npm install` rồi `npm run dev` (Node 20.13 chạy được).
+- **2026-11-16:** Gộp nhánh `shirt-3d-cloth` vào `main`. Những gì có thêm:
+  - Áo 3D đổi sang model áo tải về dựng lại trong Blender (`public/models/shirt-dl.glb`, script `tools/blender/shirt_dl_export.py` + `tools/blender/dl/`), bỏ bản `shirt-sim`.
+  - **Server API + database:** Node (`node:http`) + SQLite có sẵn của Node (`node:sqlite`, cần Node ≥ 22.5; máy đã lên Node 24). Code `server/index.js` (API), `server/db.js` (SQL). API: `POST /api/clients` (lưu khách, cùng SĐT thì cập nhật), `POST /api/orders` (tạo đơn, mã `SV-YYYYMMDD-id`), `GET /api/health`. Dữ liệu ở `server/data/shirtvn.sqlite` (không đưa lên git). Chạy: `npm run server`, test: `npm run test:server`.
+  - Trang Checkout + thanh bước (Stepper); khách nhận diện bằng SĐT, không đăng nhập; thanh toán giả lập.
+  - **Class diagram:** bản Mermaid `docs/class-diagram.md`; bản vẽ trên Visual Paradigm Online (xếp theo luồng trái → phải) — chủ vault tự lưu trên VP.
+  - Xem database: cài **DBeaver Community** (có ER Diagram); DB Browser for SQLite cũng đã cài.
+- **2026-11-16 — Bắt đầu bàn trang quản trị cho nhà may (chưa code):** nhà may đăng nhập để xem khách, đơn của mình, duyệt / từ chối đơn, dashboard, thông báo. Đã chốt hướng (xem Quyết định), đang chờ trả lời câu hỏi về API nhà máy.
+- Chạy local: `npm install`, `npm run dev` + `npm run server` (Node ≥ 22.5).
 
 ## Việc tiếp theo
+- [ ] Trang quản trị nhà may: trả lời câu hỏi "API backend nhà máy" là server trong repo này hay hệ thống B2B riêng (nút Approve có gửi đơn sang B2B không, có tài liệu API không), rồi viết design và làm.
 - [ ] Xin tài liệu backend API B2B từ chú (endpoint, xác thực, định dạng đơn hàng, các loại measurement type khác).
 - [ ] Áo 3D: thân/tay đã có lưới mô phỏng vải (buổi 4). Còn lại: dựng cổ áo dày và đẹp hơn (có thể nhờ người làm CLO3D), lưới riêng cho từng fit, xem xét gộp nhánh `shirt-3d-cloth` vào `main`.
 - [ ] Ảnh thật: thẻ Product (Shirt / Polo / Overshirt), ảnh scan vải, ảnh áo cho từng vải (thêm vào `PREVIEW_PHOTOS` trong `src/data/catalog.ts`).
@@ -93,15 +101,18 @@ Theo form hiện có của hệ thống B2B (ảnh chụp màn hình do chủ va
 - **2026-11-14 — Giao diện khách dùng tiếng Anh, theo design.** Lý do: SaaS phục vụ nhà may toàn cầu.
 - **2026-11-14 — Design điện thoại giữ nguyên cho < 1024px; desktop dùng bố cục riêng.** Lý do: design gốc chỉ có bản điện thoại; chủ vault cho phép Claude tự thiết kế desktop dựa trên font, màu và tính năng sẵn có.
 - **2026-11-14 — Xem trước 3D bằng three.js, áo ghép từ bộ phận theo option; bản hiện tại là mẫu hình khối.** Lý do: cần áo xoay/di chuyển được và đổi theo lựa chọn; chưa có model thật nên dựng tạm, cấu trúc giữ được khi thay bằng file .glb.
+- **2026-11-16 — Backend tạm: Node + SQLite trong cùng repo, không thêm thư viện.** Lý do: cần lưu khách/đơn ngay để demo; đổi sang DB khác chỉ phải sửa `server/db.js`.
+- **2026-11-16 — Mỗi nhà may tách theo tên miền riêng, độc lập hoàn toàn; mã khách có tiền tố theo tiệm (vd ShirtbyHand → `SBH-0001`).** Lý do: chủ vault chốt; các tiệm không quen biết nhau, tất cả nối chung API backend nhà máy. Sau này tiệm tự tùy biến trang (ảnh, logo) — chưa làm đợt này.
 - **2026-11-14 — Ảnh chụp thật chỉ hiện khi cấu hình khớp ảnh, còn lại dùng SVG.** Lý do: ảnh chụp không đổi theo cổ/tay/túi, hiện sai sẽ gây hiểu nhầm.
 
 ## Câu hỏi còn mở
 - Tài liệu API B2B nằm ở đâu, xác thực thế nào?
 - Phần quản lý của nhà may (tùy biến trang, tên miền, vải, khách hàng) do backend nào lưu: dùng chung backend B2B hay cần backend B2C riêng?
-- Tên miền riêng cho từng nhà may sẽ triển khai thế nào (subdomain, custom domain)?
+- Tên miền riêng cho từng nhà may sẽ triển khai thế nào (subdomain, custom domain)? — Đã chốt: mỗi tiệm một tên miền; chi tiết kỹ thuật chưa làm.
+- "API backend nhà máy có sẵn" là server trong repo này hay hệ thống B2B (mtm.shirt.vn)? Duyệt đơn có tự gửi sang B2B không?
 - Ngoài "Body Measurement" còn những loại số đo nào?
 - Deadline: chưa có.
 
 ## Tài nguyên
-- Code: GitHub `NhatProDev/shirtvn-b2c-web` (private); local trên máy Windows: `D:ile cua choe 2. Projects\shirtvn-b2c-web`. Trang thiết kế áo: `src/App.tsx`, `src/components/`, dữ liệu mẫu ở `src/data/`.
+- Code: GitHub `NhatProDev/shirtvn-b2c-web` (private); local trên máy Windows: `D:\file cua choe 2\2. Projects\13\shirtvn-b2c-web`. Trang thiết kế áo: `src/App.tsx`, `src/components/`, dữ liệu mẫu ở `src/data/`.
 - Tài liệu API: chưa có.
