@@ -3,7 +3,7 @@ type: project
 title: ShirtVN Frontend Dev
 status: in-progress
 created: 2026-11-13
-updated: 2026-11-16
+updated: 2026-11-24
 tags:
   - project
   - frontend
@@ -81,9 +81,18 @@ Theo form hiện có của hệ thống B2B (ảnh chụp màn hình do chủ va
   - **Class diagram:** bản Mermaid `docs/class-diagram.md`; bản vẽ trên Visual Paradigm Online (xếp theo luồng trái → phải) — chủ vault tự lưu trên VP.
   - Xem database: cài **DBeaver Community** (có ER Diagram); DB Browser for SQLite cũng đã cài.
 - **2026-11-16 — Bắt đầu bàn trang quản trị cho nhà may (chưa code):** nhà may đăng nhập để xem khách, đơn của mình, duyệt / từ chối đơn, dashboard, thông báo. Đã chốt hướng (xem Quyết định), đang chờ trả lời câu hỏi về API nhà máy.
+- **2026-11-21 → 24 — Đưa trang lên mạng: https://b2c.shirt.vn**
+  - **Host:** Google Cloud → Compute Engine → **VM instances**, máy `svr2` (Debian 12), IP `34.81.63.73`. Quản trị qua **SSH-in-browser** trên Google Cloud Console. Web server **Nginx**. VM này chạy chung nhiều trang khác (demo.shirt.vn, factory.shirt.vn, mtm.shirt.vn, varc.net.vn…) → chỉ sửa file của mình.
+  - Cấu hình Nginx: `/etc/nginx/sites-enabled/b2c.shirt.vn`; thư mục web: `/u01/yenbien/www/b2c.shirt.vn/html`.
+  - Chỉ đưa **bản build** (`dist/`) lên VM, không có source code trên VM.
+  - **HTTPS:** bật bằng Certbot (`sudo certbot --nginx -d b2c.shirt.vn`), http tự chuyển sang https, chứng chỉ Let's Encrypt tự gia hạn.
+  - Cách deploy thủ công (đang dùng): `npm run build` → đóng gói `html.zip` → UPLOAD FILE trong SSH-in-browser → `unzip` + `sudo rsync -a --delete html/ /u01/yenbien/www/b2c.shirt.vn/html/`.
+  - Gộp `shirt-3d-cloth` vào `main` (commit `2c457f9`). GitHub dùng để đồng bộ code giữa các máy: `git pull` trước khi làm, `git push` khi xong; máy mới thì `git clone` + `npm install`.
 - Chạy local: `npm install`, `npm run dev` + `npm run server` (Node ≥ 22.5).
 
 ## Việc tiếp theo
+- [ ] API trên server: `location /api` của b2c.shirt.vn đang trỏ `localhost:8001` — là app khác, không phải API của repo (mặc định cổng 8787) → nút đặt hàng trên trang thật chưa chạy. Cần chạy `server/index.js` trên VM (Node ≥ 22.18, pm2) và cho khớp cổng.
+- [ ] `www.b2c.shirt.vn` chưa có bản ghi DNS (nếu cần thì thêm rồi chạy lại certbot cho www).
 - [ ] Trang quản trị nhà may: trả lời câu hỏi "API backend nhà máy" là server trong repo này hay hệ thống B2B riêng (nút Approve có gửi đơn sang B2B không, có tài liệu API không), rồi viết design và làm.
 - [ ] Xin tài liệu backend API B2B từ chú (endpoint, xác thực, định dạng đơn hàng, các loại measurement type khác).
 - [ ] Áo 3D: thân/tay đã có lưới mô phỏng vải (buổi 4). Còn lại: dựng cổ áo dày và đẹp hơn (có thể nhờ người làm CLO3D), lưới riêng cho từng fit, xem xét gộp nhánh `shirt-3d-cloth` vào `main`.
@@ -103,6 +112,8 @@ Theo form hiện có của hệ thống B2B (ảnh chụp màn hình do chủ va
 - **2026-11-14 — Xem trước 3D bằng three.js, áo ghép từ bộ phận theo option; bản hiện tại là mẫu hình khối.** Lý do: cần áo xoay/di chuyển được và đổi theo lựa chọn; chưa có model thật nên dựng tạm, cấu trúc giữ được khi thay bằng file .glb.
 - **2026-11-16 — Backend tạm: Node + SQLite trong cùng repo, không thêm thư viện.** Lý do: cần lưu khách/đơn ngay để demo; đổi sang DB khác chỉ phải sửa `server/db.js`.
 - **2026-11-16 — Mỗi nhà may tách theo tên miền riêng, độc lập hoàn toàn; mã khách có tiền tố theo tiệm (vd ShirtbyHand → `SBH-0001`).** Lý do: chủ vault chốt; các tiệm không quen biết nhau, tất cả nối chung API backend nhà máy. Sau này tiệm tự tùy biến trang (ảnh, logo) — chưa làm đợt này.
+- **2026-11-21 — Host trên Google Cloud VM (svr2) + Nginx, dùng chung VM với các trang shirt.vn khác.** Lý do: hạ tầng có sẵn của công ty.
+- **2026-11-24 — GitHub chỉ để đồng bộ code giữa nhiều máy; deploy vẫn làm tay (build → `html.zip` → SSH-in-browser), không dùng deploy tự động.** Lý do: chủ vault quản trị VM bằng giao diện Google (SSH-in-browser) và muốn tự kiểm soát lúc đưa lên trang thật.
 - **2026-11-14 — Ảnh chụp thật chỉ hiện khi cấu hình khớp ảnh, còn lại dùng SVG.** Lý do: ảnh chụp không đổi theo cổ/tay/túi, hiện sai sẽ gây hiểu nhầm.
 
 ## Câu hỏi còn mở
@@ -114,5 +125,5 @@ Theo form hiện có của hệ thống B2B (ảnh chụp màn hình do chủ va
 - Deadline: chưa có.
 
 ## Tài nguyên
-- Code: GitHub `NhatProDev/shirtvn-b2c-web` (private); local trên máy Windows: `D:\file cua choe 2\2. Projects\13\shirtvn-b2c-web`. Trang thiết kế áo: `src/App.tsx`, `src/components/`, dữ liệu mẫu ở `src/data/`.
+- Code: GitHub `NhatProDev/shirtvn-b2c-web` (private); local trên máy Windows: `C:\KhanhNhat\shirtvn b2c web` (bản cũ ở `D:\file cua choe 2\2. Projects\13\shirtvn-b2c-web`). Trang thật: https://b2c.shirt.vn. Trang thiết kế áo: `src/App.tsx`, `src/components/`, dữ liệu mẫu ở `src/data/`.
 - Tài liệu API: chưa có.
