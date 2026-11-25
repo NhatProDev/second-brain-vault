@@ -3,7 +3,7 @@ type: project
 title: ERP SHIRTBYHAND
 status: in-progress
 created: 2026-11-20
-updated: 2026-11-20
+updated: 2026-11-25
 tags:
   - project
   - erp
@@ -54,9 +54,15 @@ Thay quy trình thủ công (Excel, ghi nhớ, nhắn tin) bằng dữ liệu kh
   - `INVENTORY-PURCHASING-summary.html` — tóm tắt 6 vấn đề Kho/Mua hàng.
   - `ERP-FLOWS.html` — 8 luồng "Hiện tại vs Đề xuất" (MTM, BULK, đổi vải, tranh chấp NVL, tồn tối thiểu, đổi giá NCC, đối chiếu hóa đơn, tạo item).
   - `ERP-TECH-STACK-CLASS-DIAGRAM.html` — so sánh 3 hướng, stack đề xuất, kiến trúc, class diagram (Danh mục & Kho, Đơn hàng & Sản xuất, Mua hàng & Giá), quy tắc nghiệp vụ, lộ trình.
-- Chưa viết code.
+- **2026-11-23:** Chốt tự build. Viết data model + MVP (`DATA-MODEL-MVP.md`, `data-model.html`). Phạm vi MVP: Kho NPL + Đơn hàng SX + Mua hàng NCC; không kế toán; barcode để sau.
+- **2026-11-24:** Dựng app (Next.js 16 + Prisma + PostgreSQL 17 Docker, CSS thuần, không thư viện UI): Tồn kho, chi tiết NPL (kiểm kê, mức tối thiểu), Sổ kho, Danh mục, Brand, NCC, Đơn hàng. Vai trò thực tế: Quản lý đơn (OM), Thủ kho (SK), Admin; chưa đăng nhập thật (ô chọn người dùng đầu trang), quyền kiểm ở server action.
+  - **Thiết kế lại phần Đơn hàng** cho người mới: trang tạo đơn riêng `/orders/new` (1 màn hình, thấy ngay kho đủ/thiếu, lỗi không mất dữ liệu đã gõ); trang chi tiết có thanh 5 bước + ô "Việc tiếp theo"; nhập đồ brand gửi (`BRAND_RECEIPT`, chỉ dùng cho đơn của brand đó, dư để tự do); "Xuất toàn bộ" (thiếu 1 dòng thì không xuất gì).
+  - Đã kiểm: vitest 36/36, tsc, eslint, next build, thử trên trình duyệt (cả bề ngang điện thoại).
+- **2026-11-25:** Phần **Đơn mua NPL**: tạo PO, gửi duyệt / duyệt / trả lại, đính kèm file, trang in. Viết brief UI cho ChatGPT (`erp/docs/UI-BRIEF-CHATGPT.md`) kèm **menu mới** chủ vault góp ý.
+- **2026-11-25:** Đưa code lên git + GitHub.
+- Chạy local (trong `erp/`): `docker compose up -d`, `npm install`, `npx prisma db push`, `npm run seed`, `npm run dev` (cổng 3000). Test: `npx vitest run` (DB `erp_test`).
 
-## Thiết kế đề xuất (tóm tắt)
+## Thiết kế đề xuất ban đầu (2026-11-20, trước khi code)
 - **Hướng A (đề xuất): tự build TypeScript full-stack.** Thay thế: B. Django; C. dùng thử Odoo 1 tuần với dữ liệu thật nếu cần dùng sớm.
 - Stack: React + Vite + Ant Design, TanStack Query, RHF + Zod; NestJS; Prisma; PostgreSQL 16; Redis + BullMQ; Socket.IO; MinIO/R2; LLM đọc báo giá (AI chỉ điền nháp, giám đốc duyệt); barcode Code128 (máy quét USB HID + `@zxing/browser` camera, `bwip-js` sinh mã); Docker Compose trên 1 VPS.
 - Kiến trúc: **modular monolith** — module catalog, inventory, orders, purchasing.
@@ -70,8 +76,11 @@ Thay quy trình thủ công (Excel, ghi nhớ, nhắn tin) bằng dữ liệu kh
 - Vai trò: Đặt hàng, Thủ kho, Thiết kế, Giám đốc, Kế toán, Admin.
 
 ## Việc tiếp theo
-- [ ] Chủ vault chốt hướng đi: tự build (A) hay thử Odoo trước.
-- [ ] Lộ trình nếu đi hướng A:
+- [ ] Làm giao diện theo **menu mới** (góp ý 25/11): Trang chủ dashboard; Đơn hàng SX ▾ (List đơn, Trimlist); Đơn mua NPL; Tồn kho chia tab MTM / Bulk / WG / Vải (Vải chia theo chủ sở hữu: SBH, Bulk, từng khách); Danh mục NPL lọc cùng nhóm; Thông tin liên hệ ▾ (NCC, Khách hàng).
+- [ ] Nhận mockup UI từ ChatGPT theo brief rồi áp vào app.
+- [ ] 12 góp ý nhỏ còn để lại từ review phần Đơn hàng (vd bấm "Hủy đơn" trước khi trang tải xong thì bỏ qua hỏi xác nhận).
+- [ ] Sửa thông tin chung của đơn sau khi tạo; định mức NPL theo kiểu áo; đăng nhập thật; barcode.
+- Lộ trình gốc (hướng A, tham khảo):
   1. Nền móng: Auth/RBAC, Category, Item (mã tự sinh), Warehouse, Supplier, nhập tồn đầu kỳ từ Excel.
   2. Sổ kho: nhập/xuất/chuyển, barcode, kiểm kê.
   3. Đơn hàng: MTM/BULK, BOM, giữ chỗ, phiếu barcode có phiên bản, đổi vải.
@@ -83,7 +92,10 @@ Thay quy trình thủ công (Excel, ghi nhớ, nhắn tin) bằng dữ liệu kh
 ## Quyết định
 - **2026-11-20 — Đề xuất kiến trúc modular monolith, chưa microservices.** Lý do: team nhỏ, dữ liệu kho và đơn hàng gắn chặt trong cùng transaction.
 - **2026-11-20 — Đề xuất dùng sổ kho + giữ chỗ thay vì sửa số tồn.** Lý do: giải quyết tận gốc lệch kho và tranh chấp NVL.
-- (Hướng A/B/C: **chưa chốt**.)
+- **2026-11-23 — Chốt tự build (hướng A), MVP không làm kế toán, barcode để sau.** Lý do: tập trung kho + mua hàng trước.
+- **2026-11-24 — Stack thực tế gọn hơn đề xuất: Next.js 16 (App Router, Server Actions) + Prisma + PostgreSQL, CSS thuần, không NestJS/Redis/Ant Design.** Lý do: app nội bộ ~5 người, một repo full-stack đủ dùng.
+- **2026-11-24 — Đơn hàng: hướng A + B** (trang chi tiết theo bước + tạo đơn trên một màn hình). Lý do: chủ vault chọn sau khi xem mockup.
+- **2026-11-24 — Giao diện tiếng Việt, dùng được ở bề ngang điện thoại.**
 
 ## Câu hỏi còn mở
 - Tự build hay Odoo? Ai sẽ làm backend?
@@ -94,4 +106,4 @@ Thay quy trình thủ công (Excel, ghi nhớ, nhắn tin) bằng dữ liệu kh
 
 ## Tài nguyên
 - Tài liệu gốc (local, máy Windows): `C:\Users\ACER\Desktop\ERP\` — `INVENTORY-PURCHASING.docx`, `BARCODE.docx`, cùng 3 trang HTML phân tích ở trên.
-- Code: chưa có repo.
+- Code: GitHub `NhatProDev/shirtbyhand-erp` (private); local máy Windows `D:\file cua choe 2\2. Projects\14. ERP` (app trong `erp/`, data model `DATA-MODEL-MVP.md`, thiết kế phần Đơn hàng `erp/docs/superpowers/`).
