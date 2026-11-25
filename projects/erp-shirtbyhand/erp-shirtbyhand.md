@@ -58,8 +58,10 @@ Thay quy trình thủ công (Excel, ghi nhớ, nhắn tin) bằng dữ liệu kh
 - **2026-11-24:** Dựng app (Next.js 16 + Prisma + PostgreSQL 17 Docker, CSS thuần, không thư viện UI): Tồn kho, chi tiết NPL (kiểm kê, mức tối thiểu), Sổ kho, Danh mục, Brand, NCC, Đơn hàng. Vai trò thực tế: Quản lý đơn (OM), Thủ kho (SK), Admin; chưa đăng nhập thật (ô chọn người dùng đầu trang), quyền kiểm ở server action.
   - **Thiết kế lại phần Đơn hàng** cho người mới: trang tạo đơn riêng `/orders/new` (1 màn hình, thấy ngay kho đủ/thiếu, lỗi không mất dữ liệu đã gõ); trang chi tiết có thanh 5 bước + ô "Việc tiếp theo"; nhập đồ brand gửi (`BRAND_RECEIPT`, chỉ dùng cho đơn của brand đó, dư để tự do); "Xuất toàn bộ" (thiếu 1 dòng thì không xuất gì).
   - Đã kiểm: vitest 36/36, tsc, eslint, next build, thử trên trình duyệt (cả bề ngang điện thoại).
-- **2026-11-25:** Phần **Đơn mua NPL**: tạo PO, gửi duyệt / duyệt / trả lại, đính kèm file, trang in. Viết brief UI cho ChatGPT (`erp/docs/UI-BRIEF-CHATGPT.md`) kèm **menu mới** chủ vault góp ý.
-- **2026-11-25:** Đưa code lên git + GitHub.
+- **2026-11-25:** Phần **Đơn mua NPL**: PO đi qua Nháp → Chờ duyệt → Đã duyệt → Đã gửi NCC → Nhận một phần / Đã nhận (hoặc Hủy); người tạo không tự duyệt được (admin hoặc quản lý đơn khác duyệt), trả lại được; đính kèm file (lưu `erp/uploads/`); trang **In PDF**; nhận hàng theo từng dòng. Viết brief UI cho ChatGPT (`erp/docs/UI-BRIEF-CHATGPT.md`).
+- **2026-11-25:** Làm **menu mới** chủ vault góp ý (dropdown, đóng bằng Esc / bấm ra ngoài): Trang chủ · Đơn hàng SX ▾ (List đơn hàng, Trimlist "sắp có") · Đơn mua NPL · Tồn kho · Danh mục NPL · Thông tin liên hệ ▾ (Nhà cung cấp, Khách hàng = trang Brand).
+- **2026-11-25:** **Trang chủ dashboard**: đơn sản xuất gần đây, Việc cần làm, NPL dưới mức báo động, đơn mua NCC sắp về / trễ. Ô "Việc cần làm" đang là **dữ liệu mẫu** để duyệt bố cục, chưa có bảng to-do thật.
+- **2026-11-25:** Đưa code lên git + GitHub (repo private).
 - Chạy local (trong `erp/`): `docker compose up -d`, `npm install`, `npx prisma db push`, `npm run seed`, `npm run dev` (cổng 3000). Test: `npx vitest run` (DB `erp_test`).
 
 ## Thiết kế đề xuất ban đầu (2026-11-20, trước khi code)
@@ -76,7 +78,8 @@ Thay quy trình thủ công (Excel, ghi nhớ, nhắn tin) bằng dữ liệu kh
 - Vai trò: Đặt hàng, Thủ kho, Thiết kế, Giám đốc, Kế toán, Admin.
 
 ## Việc tiếp theo
-- [ ] Làm giao diện theo **menu mới** (góp ý 25/11): Trang chủ dashboard; Đơn hàng SX ▾ (List đơn, Trimlist); Đơn mua NPL; Tồn kho chia tab MTM / Bulk / WG / Vải (Vải chia theo chủ sở hữu: SBH, Bulk, từng khách); Danh mục NPL lọc cùng nhóm; Thông tin liên hệ ▾ (NCC, Khách hàng).
+- [ ] Phần còn lại của menu mới: **Tồn kho chia tab** MTM / Bulk / WG / Vải (Vải chia theo chủ sở hữu: SBH, Bulk, từng khách); **Danh mục NPL lọc** cùng nhóm; trang **Trimlist**.
+- [ ] Làm bảng to-do thật cho "Việc cần làm" ở trang chủ (người nhận, người tạo, ngày xong).
 - [ ] Nhận mockup UI từ ChatGPT theo brief rồi áp vào app.
 - [ ] 12 góp ý nhỏ còn để lại từ review phần Đơn hàng (vd bấm "Hủy đơn" trước khi trang tải xong thì bỏ qua hỏi xác nhận).
 - [ ] Sửa thông tin chung của đơn sau khi tạo; định mức NPL theo kiểu áo; đăng nhập thật; barcode.
